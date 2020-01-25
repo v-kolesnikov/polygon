@@ -17,14 +17,50 @@ class RandomWords extends StatefulWidget {
 
 class RandomWordsState extends State<RandomWords> {
   final _suggestions = <String>[];
+  final _saved = <String>[];
+  final _biggerFont = TextStyle(fontSize: 18.0);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text('Startup Name Generator'),
+          actions: <Widget>[
+            IconButton(icon: Icon(Icons.list), onPressed: _pushSaved),
+          ],
         ),
         body: _buildSuggestions());
+  }
+
+  void _pushSaved() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          final Iterable<ListTile> tiles = _saved.map(
+            (title) {
+              return ListTile(
+                title: Text(
+                  title,
+                  style: _biggerFont,
+                ),
+              );
+            },
+          );
+
+          final List<Widget> divided = ListTile.divideTiles(
+            context: context,
+            tiles: tiles,
+          ).toList();
+
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('Saved Suggestions'),
+            ),
+            body: ListView(children: divided),
+          );
+        },
+      ),
+    );
   }
 
   Widget _buildSuggestions() {
@@ -44,6 +80,18 @@ class RandomWordsState extends State<RandomWords> {
   }
 
   Widget _buildRow(String title) {
-    return ListTile(title: Text(title, style: TextStyle(fontSize: 18.0)));
+    final bool alreadySaved = _saved.contains(title);
+    return ListTile(
+      title: Text(title, style: _biggerFont),
+      trailing: Icon(
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),
+      onTap: () {
+        setState(() {
+          alreadySaved ? _saved.remove(title) : _saved.add(title);
+        });
+      },
+    );
   }
 }
